@@ -1,0 +1,51 @@
+const { Client, GatewayIntentBits, EmbedBuilder, PermissionsBitField, Permissions, MessageManager, Embed, Collection } = require(`discord.js`);
+const fs = require('fs');
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] }); 
+
+client.commands = new Collection();
+
+require('dotenv').config();
+
+const functions = fs.readdirSync("./src/functions").filter(file => file.endsWith(".js"));
+const eventFiles = fs.readdirSync("./src/events").filter(file => file.endsWith(".js"));
+const commandFolders = fs.readdirSync("./src/commands");
+
+(async () => {
+    for (file of functions) {
+        require(`./functions/${file}`)(client);
+    }
+    client.handleEvents(eventFiles, "./src/events");
+    client.handleCommands(commandFolders, "./src/commands");
+    client.login(process.env.token)
+})();
+
+
+
+//status
+
+client.on('ready', () => {
+    const activities = [
+        
+      
+          { name: `/help`, type: 2 }, // PLAYING
+          
+      ];
+      const status = [
+          'online',
+          'dnd',
+          'idle'
+      ];
+      let i = 0;
+      setInterval(() => {
+          if(i >= activities.length) i = 0
+          client.user.setActivity(activities[i])
+          i++;
+      }, 5000);
+    
+      let s = 0;
+      setInterval(() => {
+          if(s >= activities.length) s = 0
+          client.user.setStatus(status[s])
+          s++;
+      }, 5000);
+  });
